@@ -71,6 +71,7 @@ class CalculatorActivity : AppCompatActivity()  {
             datePickerDialog.show()
         }
 
+
         val CalculateButton: Button = findViewById(R.id.calculateButton)
         resultTextView = findViewById(R.id.resultTextView)
         val resultTextView = findViewById<TextView>(R.id.resultTextView)
