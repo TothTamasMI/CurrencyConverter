@@ -44,7 +44,6 @@ class CalculatorActivity : AppCompatActivity()  {
             initSpinners()
         }
 
-
         //--------------------INIT CALENDAR--------------------\\
         val sdf = SimpleDateFormat("yyyy-MM-dd")
         val currentDate = sdf.format(Date())
@@ -71,7 +70,6 @@ class CalculatorActivity : AppCompatActivity()  {
                 }, year, month, day)
             datePickerDialog.show()
         }
-
 
         val CalculateButton: Button = findViewById(R.id.calculateButton)
         resultTextView = findViewById(R.id.resultTextView)
