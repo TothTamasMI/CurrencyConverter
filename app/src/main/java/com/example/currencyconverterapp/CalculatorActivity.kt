@@ -1,56 +1,148 @@
 package com.example.currencyconverterapp
 
-import android.app.Activity
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
-import android.view.View.inflate
-import android.widget.Button
-import android.widget.TextView
+import android.view.View
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.github.kittinunf.fuel.Fuel
-import com.github.kittinunf.fuel.core.Response
-import com.github.kittinunf.result.Result
-import com.github.kittinunf.fuel.httpGet
-import com.google.gson.Gson
+import com.chivorn.smartmaterialspinner.SmartMaterialSpinner
 import kotlinx.coroutines.*
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.net.URL
+import java.text.SimpleDateFormat
+import java.util.*
 
 class CalculatorActivity : AppCompatActivity()  {
-    val url = "https://api.exchangerate.host/2020-04-04"
-    val symbolsUrl = "https://api.exchangerate.host/symbols"
-    var symbolsList = mutableListOf<String>()
-    var codeList = mutableListOf<String>()
+    //--------------------GLOBAL VARIABLES---------------------\\
+    private var fromSpinner: SmartMaterialSpinner<String>? = null
+    private var toSpinner: SmartMaterialSpinner<String>? = null
+
+    private var resultTextView: TextView ?= null
+    private var amountEditText: EditText ?= null
+
+    private var fromCurrency: String ?= null
+    private var toCurrency: String ?= null
+    private var fromCurrencyCode: String ?= null
+    private var toCurrencyCode: String ?= null
+    private var amount = 1.0
+    private var rate: Double ?= null
+    private var date: String ?= null
+
+    private val symbolsUrl = "https://api.exchangerate.host/symbols"
+    private var symbolsList = mutableListOf<String>()
+    private var codeList = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calculator)
 
-        val CalculateButton: Button = findViewById(R.id.calculateButton)
-        val ResultTextView: TextView = findViewById(R.id.resultTextView)
-        ResultTextView.movementMethod = ScrollingMovementMethod()
-
-        CalculateButton.setOnClickListener {
-            runBlocking {
+        //---------------INTIT AND FILL SPINNERS---------------\\
+        runBlocking {
             GlobalScope.async{
                 getSymbols()
-                }.await()
-                var sb = StringBuilder()
-                for(i in 0..(symbolsList.size -1)){
-                    sb.append(symbolsList.get(i) + " " + codeList.get(i) + "\n")
-                }
-                runOnUiThread{
-                    ResultTextView.text = sb.toString()
-                }
+            }.await()
+            initSpinners()
+        }
+
+
+        //--------------------INIT CALENDAR--------------------\\
+        val sdf = SimpleDateFormat("yyyy-MM-dd")
+        val currentDate = sdf.format(Date())
+
+        val c = Calendar.getInstance()
+        val year = c.get(Calendar.YEAR)
+        val month = c.get(Calendar.MONTH)
+        val day = c.get(Calendar.DAY_OF_MONTH)
+        val datePickerButton = findViewById<Button>(R.id.datePickerButton)
+        datePickerButton.text = currentDate
+        date = currentDate
+
+        datePickerButton.setOnClickListener {
+            val datePickerDialog = DatePickerDialog(
+                this, DatePickerDialog.OnDateSetListener{view, mYear, mMonth, mDay ->
+                    val mMonthCopy = mMonth + 1
+                    var mMonthString = mMonthCopy.toString()
+                    if (mMonthCopy < 10){
+                        mMonthString = "" + 0 + mMonthString
+                    }
+
+                    datePickerButton.text = "" + mYear +"-" + mMonthString + "-" + mDay
+                    date = "" + mYear +"-" + mMonthString + "-" + mDay
+                }, year, month, day)
+            datePickerDialog.show()
+        }
+
+
+        val CalculateButton: Button = findViewById(R.id.calculateButton)
+        resultTextView = findViewById(R.id.resultTextView)
+        val resultTextView = findViewById<TextView>(R.id.resultTextView)
+
+        amountEditText = findViewById<EditText>(R.id.amountEditText)
+
+        resultTextView!!.movementMethod = ScrollingMovementMethod()
+
+
+        CalculateButton.setOnClickListener {
+            if (amountEditText!!.text.toString() != ""){
+                amount = amountEditText!!.text.toString().toDouble()
             }
+            else{
+                amount = 1.0
+            }
+            calculateCurrency()
         }
 
 
     }
 
+    private fun calculateCurrency() {
+        //https://api.exchangerate.host/2020-04-04?base=USD&symbols=EUR
+        try{
+            if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
+                fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
+                toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
+                var URL = "https://api.exchangerate.host/"+ date +"?base=" + fromCurrencyCode + "&symbols=" + toCurrencyCode
 
+                runBlocking {
+                    GlobalScope.async{
+                        getRateFromURL(URL)
+                    }.await()}
+                var result = (rate!! * amount).toString()
+
+                resultTextView!!.text = "" + amount + " " + fromCurrencyCode + " = " +  result + " " + toCurrencyCode
+            }
+            else{
+                println("API ERROR Wrong currency codes")
+            }
+        }
+        catch (e : Exception){
+            resultTextView!!.text = "ERROR, Please try again or try another currency or date"
+        }
+    }
+
+    private fun initSpinners() {
+        fromSpinner = findViewById(R.id.fromSpinner)
+        toSpinner = findViewById(R.id.toSpinner)
+
+        fromSpinner?.item = symbolsList
+        toSpinner?.item = symbolsList
+
+        fromSpinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(adapterView: AdapterView<*>, view: View, position: Int, id: Long) {
+                fromCurrency = symbolsList!![position]
+            }
+
+            override fun onNothingSelected(adapterView: AdapterView<*>) {}
+        }
+
+        toSpinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(adapterView: AdapterView<*>, view: View, position: Int, id: Long) {
+                toCurrency = symbolsList!![position]
+            }
+
+            override fun onNothingSelected(adapterView: AdapterView<*>) {}
+        }
+    }
 
     private suspend fun getSymbols() {
         withContext(Dispatchers.Default) {
@@ -68,6 +160,20 @@ class CalculatorActivity : AppCompatActivity()  {
                     break
                 }
             }
+            for (i in 0..symbolsList.size - 1){
+                symbolsList[i] = symbolsList[i] + " (" + codeList[i] + ")"
+            }
+        }
+    }
+
+    private suspend fun getRateFromURL(URL : String){
+        withContext(Dispatchers.Default) {
+            val response = URL(URL).readText()
+            println(URL)
+            var result = response.substring(response.indexOf("historical"))
+            result = result.substring(result.indexOf(toCurrencyCode+"") + 5)
+            result = result.substring(0,result.indexOf("}"))
+            rate = result.toDouble()
         }
     }
 }
