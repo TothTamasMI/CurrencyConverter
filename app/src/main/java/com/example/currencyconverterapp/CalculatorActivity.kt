@@ -174,4 +174,5 @@ class CalculatorActivity : AppCompatActivity()  {
             rate = result.toDouble()
         }
     }
+
 }
