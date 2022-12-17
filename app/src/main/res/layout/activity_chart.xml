@@ -1,53 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ChartActivity">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/layout_bg"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_height="match_parent"
+            tools:layout_editor_absoluteX="16dp"
+            tools:layout_editor_absoluteY="-102dp">
 
-            <Button
-                android:id="@+id/button7"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Button" />
+                android:orientation="vertical">
 
-            <Button
-                android:id="@+id/button8"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Button" />
+                <com.chivorn.smartmaterialspinner.SmartMaterialSpinner
+                    android:id="@+id/fromSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
 
-            <Button
-                android:id="@+id/button9"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Button" />
+                    android:layout_marginTop="20dp"
+                    android:layout_marginEnd="20dp"
 
-        </LinearLayout>
+                    android:background="@drawable/shape"
+                    android:textAlignment="center"
 
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="TEXT vIEW" />
-    </LinearLayout>
+                    app:smsp_floatingLabelColor="#005066"
+                    app:smsp_floatingLabelText="FROM"
+                    app:smsp_hint="From currency"
+                    app:smsp_hintColor="#005066"
+                    app:smsp_isSearchable="true"
+                    app:smsp_itemColor="#005066"
+                    app:smsp_itemListColor="#005066"
+                    app:smsp_itemListHintBackgroundColor="#808080"
+                    app:smsp_itemListHintColor="#FFFFFF"
+                    app:smsp_itemSize="14dp"
+                    app:smsp_selectedItemListColor="#FF5252" />
+
+                <com.chivorn.smartmaterialspinner.SmartMaterialSpinner
+                    android:id="@+id/toSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+
+                    android:layout_marginTop="50dp"
+
+                    android:layout_marginEnd="20dp"
+                    android:background="@drawable/shape"
+                    android:textAlignment="center"
+
+                    app:smsp_floatingLabelColor="#005066"
+                    app:smsp_floatingLabelText="FROM"
+                    app:smsp_hint="To currency"
+                    app:smsp_hintColor="#005066"
+                    app:smsp_isSearchable="true"
+                    app:smsp_itemColor="#005066"
+                    app:smsp_itemListColor="#005066"
+                    app:smsp_itemListHintBackgroundColor="#808080"
+                    app:smsp_itemListHintColor="#FFFFFF"
+                    app:smsp_itemSize="14dp"
+                    app:smsp_selectedItemListColor="#FF5252" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/weekButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="50dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/shape"
+                        android:text="last\nweek" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/monthButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="50dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/shape"
+                        android:text="last\nmonth" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/yearButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="50dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/shape"
+                        android:text="last\nyear" />
+
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/resultChart"
+                    android:layout_width="310dp"
+                    android:layout_height="265dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="50dp"
+                    android:layout_marginEnd="20dp"
+                    tools:srcCompat="@tools:sample/avatars" />
+
+                <TextView
+                    android:id="@+id/chartResultTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TextView\nTextView\nTextView\nTextView\nTextView\nTextView\nTextView\n"
+
+                    android:textAlignment="center" />
+            </LinearLayout>
+        </ScrollView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
