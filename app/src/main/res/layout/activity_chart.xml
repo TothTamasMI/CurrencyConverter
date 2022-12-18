@@ -117,20 +117,27 @@
 
                 </LinearLayout>
 
-                <ImageButton
-                    android:id="@+id/resultChart"
-                    android:layout_width="310dp"
-                    android:layout_height="265dp"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginTop="50dp"
-                    android:layout_marginEnd="20dp"
-                    tools:srcCompat="@tools:sample/avatars" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <ImageButton
+                        android:id="@+id/resultChart"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="50dp"
+                        android:layout_marginEnd="20dp"
+                        android:baselineAlignBottom="false"
+                        android:scaleType="matrix"
+                        tools:srcCompat="@tools:sample/avatars" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/chartResultTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TextView\nTextView\nTextView\nTextView\nTextView\nTextView\nTextView\n"
 
                     android:textAlignment="center" />
             </LinearLayout>
