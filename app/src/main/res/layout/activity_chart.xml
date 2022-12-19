@@ -124,13 +124,14 @@
 
                     <ImageButton
                         android:id="@+id/resultChart"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="20dp"
                         android:layout_marginTop="50dp"
                         android:layout_marginEnd="20dp"
                         android:baselineAlignBottom="false"
-                        android:scaleType="matrix"
+                        android:scaleType="fitXY"
+                        android:background="@drawable/layout_bg"
                         tools:srcCompat="@tools:sample/avatars" />
                 </LinearLayout>
 
