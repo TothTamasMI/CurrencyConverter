@@ -27,12 +27,18 @@ class ChartActivity : AppCompatActivity() {
     private val symbolsUrl = "https://api.exchangerate.host/symbols"
     private var symbolsList = mutableListOf<String>()
     private var timeList = mutableListOf<String>()
-    private var dataList = mutableListOf<String>()
+    private var dataList = mutableListOf<Double>()
     private var codeList = mutableListOf<String>()
     private var fromCurrency: String ?= null
     private var toCurrency: String ?= null
     private var fromCurrencyCode: String ?= null
     private var toCurrencyCode: String ?= null
+    private var min: Double ?= null
+    private var max: Double ?= null
+    private var minDate: String ?= null
+    private var maxDate: String ?= null
+    private var streak: Int ?= null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,6 +109,7 @@ class ChartActivity : AppCompatActivity() {
 
         monthButton.setOnClickListener {
             try{
+                resultTextView.text = ""
                 if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
                     fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
                     toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
@@ -195,6 +202,31 @@ class ChartActivity : AppCompatActivity() {
             }
         }
     }
+    private fun setMinMaxStreak(){
+        min = dataList.get(0)
+        max = dataList.get(0)
+        minDate = ""
+        maxDate = ""
+        streak = 0
+        for (i in 0..(dataList.size-1)){
+            if(dataList.get(i) > max!!){
+                max = dataList.get(i)
+                maxDate = timeList.get(i)
+            }
+            if(dataList.get(i) < min!!){
+                min = dataList.get(i)
+                minDate = timeList.get(i)
+            }
+            if(i > 0){
+                if(dataList.get(i) >= dataList.get(i - 1)){
+                    streak = streak!!+1
+                }
+                else{
+                    streak = 0
+                }
+            }
+        }
+    }
 
     private fun initSpinners() {
         fromSpinner = findViewById(R.id.fromSpinner)
@@ -251,7 +283,7 @@ class ChartActivity : AppCompatActivity() {
             for (data in datas.split("},\"")){
                 val timeAndData = data.replace("\":{\"USD\":", " ").replace("}}}", "")
                 timeList.add(timeAndData.substring(0, 10))
-                dataList.add(timeAndData.substring(19))
+                dataList.add((timeAndData.substring(19)).toDouble())
                 println(timeAndData.substring(0, 10))
                 println(timeAndData.substring(19))
             }
