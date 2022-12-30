@@ -65,6 +65,7 @@ class ChartActivity : AppCompatActivity() {
 
         weekButton.setOnClickListener {
             try{
+                resultTextView.text = ""
                 if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
                     fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
                     toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
@@ -79,7 +80,7 @@ class ChartActivity : AppCompatActivity() {
                             getRateFromURL(timeSeriesURL)
                         }.await()}
 
-                    println(makeChartURL())
+                    //println(makeChartURL())
 
                     //----------------------COPYED FROM THE INTERNET----------------------\\
                     val executor = Executors.newSingleThreadExecutor()
@@ -92,6 +93,11 @@ class ChartActivity : AppCompatActivity() {
                             handler.post {
                                 imageButton.setImageBitmap(image)
                             }
+
+                            setMinMaxStreak()
+                            runOnUiThread{
+                                resultTextView.text = "minimum value = " + min + "\nmaximum value = " + max + "\nstreak = " + streak + " days"
+                            }
                         }
                         catch (e: Exception) {
                             e.printStackTrace()
@@ -99,7 +105,7 @@ class ChartActivity : AppCompatActivity() {
                     }
                 }
                 else{
-                    println("API ERROR Wrong currency codes")
+                    //println("API ERROR Wrong currency codes")
                 }
             }
             catch (e : Exception){
@@ -124,7 +130,7 @@ class ChartActivity : AppCompatActivity() {
                             getRateFromURL(timeSeriesURL)
                         }.await()}
 
-                    println(makeChartURL())
+                    //println(makeChartURL())
 
                     //----------------------COPYED FROM THE INTERNET----------------------\\
                     val executor = Executors.newSingleThreadExecutor()
@@ -137,6 +143,11 @@ class ChartActivity : AppCompatActivity() {
                             handler.post {
                                 imageButton.setImageBitmap(image)
                             }
+
+                            setMinMaxStreak()
+                            runOnUiThread{
+                                resultTextView.text = "minimum value = " + min + "\nmaximum value = " + max + "\nstreak = " + streak + " days"
+                            }
                         }
                         catch (e: Exception) {
                             e.printStackTrace()
@@ -144,7 +155,7 @@ class ChartActivity : AppCompatActivity() {
                     }
                 }
                 else{
-                    println("API ERROR Wrong currency codes")
+                    //println("API ERROR Wrong currency codes")
                 }
             }
             catch (e : Exception){
@@ -153,6 +164,7 @@ class ChartActivity : AppCompatActivity() {
         }
 
         yearButton.setOnClickListener {
+            resultTextView.text = ""
             try{
                 if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
                     fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
@@ -168,7 +180,7 @@ class ChartActivity : AppCompatActivity() {
                             getRateFromURL(timeSeriesURL)
                         }.await()}
 
-                    println(makeChartURL())
+                    //println(makeChartURL())
 
                     //----------------------COPYED FROM THE INTERNET----------------------\\
                     val executor = Executors.newSingleThreadExecutor()
@@ -185,10 +197,15 @@ class ChartActivity : AppCompatActivity() {
                         catch (e: Exception) {
                             e.printStackTrace()
                         }
+
+                        setMinMaxStreak()
+                        runOnUiThread{
+                            resultTextView.text = "minimum value = " + min + "\nmaximum value = " + max + "\nstreak = " + streak + " days"
+                        }
                     }
                 }
                 else{
-                    println("API ERROR Wrong currency codes")
+                    //println("API ERROR Wrong currency codes")
                 }
             }
             catch (e : Exception){
@@ -202,6 +219,7 @@ class ChartActivity : AppCompatActivity() {
             }
         }
     }
+
     private fun setMinMaxStreak(){
         min = dataList.get(0)
         max = dataList.get(0)
@@ -276,16 +294,17 @@ class ChartActivity : AppCompatActivity() {
 
     private suspend fun getRateFromURL(URL : String){
         withContext(Dispatchers.Default) {
+            //println(URL)
             val response = URL(URL).readText()
             var datas = response.substring(response.indexOf("\"rates\":{") + 10)
             timeList.clear()
             dataList.clear()
             for (data in datas.split("},\"")){
-                val timeAndData = data.replace("\":{\"USD\":", " ").replace("}}}", "")
+                val timeAndData = data.replace("}}}", "")
                 timeList.add(timeAndData.substring(0, 10))
                 dataList.add((timeAndData.substring(19)).toDouble())
-                println(timeAndData.substring(0, 10))
-                println(timeAndData.substring(19))
+                //println(timeAndData.substring(0, 10))
+                //println(timeAndData.substring(19))
             }
         }
     }
