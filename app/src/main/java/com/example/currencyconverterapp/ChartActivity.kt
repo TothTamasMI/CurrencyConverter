@@ -38,6 +38,7 @@ class ChartActivity : AppCompatActivity() {
     private var minDate: String ?= null
     private var maxDate: String ?= null
     private var streak: Int ?= null
+    private var actual: Double ?= null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,7 +66,7 @@ class ChartActivity : AppCompatActivity() {
 
         weekButton.setOnClickListener {
             try{
-                resultTextView.text = ""
+                resultTextView.text = "Loading..."
                 if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
                     fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
                     toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
@@ -96,7 +97,7 @@ class ChartActivity : AppCompatActivity() {
 
                             setMinMaxStreak()
                             runOnUiThread{
-                                resultTextView.text = "minimum value = " + min + "\nmaximum value = " + max + "\nstreak = " + streak + " days"
+                                resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
                             }
                         }
                         catch (e: Exception) {
@@ -115,7 +116,7 @@ class ChartActivity : AppCompatActivity() {
 
         monthButton.setOnClickListener {
             try{
-                resultTextView.text = ""
+                resultTextView.text = "Loading..."
                 if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
                     fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
                     toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
@@ -146,7 +147,7 @@ class ChartActivity : AppCompatActivity() {
 
                             setMinMaxStreak()
                             runOnUiThread{
-                                resultTextView.text = "minimum value = " + min + "\nmaximum value = " + max + "\nstreak = " + streak + " days"
+                                resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
                             }
                         }
                         catch (e: Exception) {
@@ -164,7 +165,7 @@ class ChartActivity : AppCompatActivity() {
         }
 
         yearButton.setOnClickListener {
-            resultTextView.text = ""
+            resultTextView.text = "Loading..."
             try{
                 if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
                     fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
@@ -200,7 +201,7 @@ class ChartActivity : AppCompatActivity() {
 
                         setMinMaxStreak()
                         runOnUiThread{
-                            resultTextView.text = "minimum value = " + min + "\nmaximum value = " + max + "\nstreak = " + streak + " days"
+                            resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
                         }
                     }
                 }
@@ -244,6 +245,7 @@ class ChartActivity : AppCompatActivity() {
                 }
             }
         }
+        actual = dataList.get(dataList.size-1)
     }
 
     private fun initSpinners() {
