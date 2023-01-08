@@ -14,7 +14,7 @@ class MainActivity : AppCompatActivity() {
         val CalculatorButton = findViewById<Button>(R.id.CalculatorButton)
 
         ChartButon.setOnClickListener {
-            val i = Intent(this, ChartActivity::class.java)
+            val i = Intent(this, ChartSelectorActivity::class.java)
             startActivity(i)
         }
 
