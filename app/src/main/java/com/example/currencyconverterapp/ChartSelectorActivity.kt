@@ -10,8 +10,8 @@ class ChartSelectorActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chart_selector)
 
-        val singleButton = findViewById<Button>(R.id.singleButton)
-        val doubleButton = findViewById<Button>(R.id.doubleButton)
+        val singleButton = findViewById<Button>(R.id.toCalculatorButton)
+        val doubleButton = findViewById<Button>(R.id.toAllCalculatorButton)
 
         singleButton.setOnClickListener {
             val i = Intent(this, ChartActivity::class.java)

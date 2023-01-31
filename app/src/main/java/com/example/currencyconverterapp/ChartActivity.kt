@@ -10,6 +10,8 @@ import android.provider.MediaStore
 import android.view.View
 import android.widget.*
 import com.chivorn.smartmaterialspinner.SmartMaterialSpinner
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
@@ -45,6 +47,7 @@ class ChartActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chart)
 
+        try{
         runBlocking {
             GlobalScope.async{
                 getSymbols()
@@ -220,6 +223,24 @@ class ChartActivity : AppCompatActivity() {
             }
         }
     }
+        catch(e : Exception){
+            internetPopUp()
+        }
+    }
+
+    private fun internetPopUp(){
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Internet error!").setMessage("No internet, please try again!")
+            .setPositiveButton("Refresh"){dialog, which ->
+                finish();
+                startActivity(getIntent());
+            }
+            .show()
+    }
+
+    private fun showSnackbar(message: String){
+        Snackbar.make(getWindow().getDecorView().getRootView(), message, Snackbar.LENGTH_SHORT).show()
+    }
 
     private fun setMinMaxStreak(){
         min = dataList.get(0)
@@ -376,5 +397,4 @@ class ChartActivity : AppCompatActivity() {
             bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, it)
             Toast.makeText(this , "Saved to Gallery" , Toast.LENGTH_SHORT).show()
         }
-    }
-}
+    }}

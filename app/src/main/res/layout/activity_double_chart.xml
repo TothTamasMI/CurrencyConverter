@@ -44,8 +44,8 @@
                     android:textAlignment="center"
 
                     app:smsp_floatingLabelColor="#005066"
-                    app:smsp_floatingLabelText="FROM"
-                    app:smsp_hint="From currency"
+                    app:smsp_floatingLabelText="TO CURRENCY"
+                    app:smsp_hint="To currency"
                     app:smsp_hintColor="#005066"
                     app:smsp_isSearchable="true"
                     app:smsp_itemColor="#005066"
@@ -68,8 +68,8 @@
                     android:textAlignment="center"
 
                     app:smsp_floatingLabelColor="#005066"
-                    app:smsp_floatingLabelText="TO 1"
-                    app:smsp_hint="To currency 1"
+                    app:smsp_floatingLabelText="FROM CURRENCY 1"
+                    app:smsp_hint="From currency 1"
                     app:smsp_hintColor="#005066"
                     app:smsp_isSearchable="true"
                     app:smsp_itemColor="#005066"
@@ -92,8 +92,8 @@
                     android:textAlignment="center"
 
                     app:smsp_floatingLabelColor="#005066"
-                    app:smsp_floatingLabelText="TO 2"
-                    app:smsp_hint="To currency 2"
+                    app:smsp_floatingLabelText="FROM CURRENCY 2"
+                    app:smsp_hint="From currency 2"
                     app:smsp_hintColor="#005066"
                     app:smsp_isSearchable="true"
                     app:smsp_itemColor="#005066"
@@ -159,18 +159,7 @@
                         tools:srcCompat="@tools:sample/avatars" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/chartResultTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginTop="50dp"
-                    android:layout_marginBottom="20dp"
-                    android:layout_marginEnd="20dp"
-                    android:background="@drawable/shape"
-                    android:text="Pick two currencies and select a time range"
-                    android:textAlignment="textStart"
-                    android:textColor="#005066" />
+
             </LinearLayout>
         </ScrollView>
 

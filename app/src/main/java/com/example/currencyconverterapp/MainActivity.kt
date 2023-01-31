@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         CalculatorButton.setOnClickListener{
-            val i = Intent(this,CalculatorActivity::class.java)
+            val i = Intent(this,CalculatorSelectorActivity::class.java)
             startActivity(i)
         }
 

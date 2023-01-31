@@ -3,6 +3,7 @@ package com.example.currencyconverterapp
 import android.content.ContentValues
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.net.Uri
 import android.os.*
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,8 @@ import android.provider.MediaStore
 import android.view.View
 import android.widget.*
 import com.chivorn.smartmaterialspinner.SmartMaterialSpinner
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
@@ -45,195 +48,249 @@ class DoubleChartActivity : AppCompatActivity() {
     private var streak: Int ?= null
     private var actual: Double ?= null
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_double_chart)
+        try {
+            runBlocking {
+                GlobalScope.async {
+                    getSymbols()
+                }.await()
+                initSpinners()
+            }
 
-        runBlocking {
-            GlobalScope.async{
-                getSymbols()
-            }.await()
-            initSpinners()
-        }
+            val imageButton = findViewById<ImageButton>(R.id.resultChart)
+            val weekButton = findViewById<Button>(R.id.weekButton)
+            val monthButton = findViewById<Button>(R.id.monthButton)
+            val yearButton = findViewById<Button>(R.id.yearButton)
+            //val resultTextView = findViewById<TextView>(R.id.chartResultTextView)
 
-        val imageButton = findViewById<ImageButton>(R.id.resultChart)
-        val weekButton = findViewById<Button>(R.id.weekButton)
-        val monthButton = findViewById<Button>(R.id.monthButton)
-        val yearButton = findViewById<Button>(R.id.yearButton)
-        val resultTextView = findViewById<TextView>(R.id.chartResultTextView)
+            var image: Bitmap? = null
 
-        var image: Bitmap? = null
+            val sdf = SimpleDateFormat("yyyy-MM-dd")
+            val currentDate = sdf.format(Date())
+            date = currentDate
 
-        val sdf = SimpleDateFormat("yyyy-MM-dd")
-        val currentDate = sdf.format(Date())
-        date = currentDate
+            weekButton.setOnClickListener {
+                try {
+                    showSnackbar("Loading...")
+                    //resultTextView.text = "Loading..."
+                    if (fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")") && toCurrency2!!.endsWith(
+                            ")"
+                        )
+                    ) {
+                        fromCurrencyCode = fromCurrency!!.substring(
+                            fromCurrency!!.length - 4,
+                            fromCurrency!!.length - 1
+                        )
+                        toCurrencyCode =
+                            toCurrency!!.substring(toCurrency!!.length - 4, toCurrency!!.length - 1)
+                        toCurrencyCode2 = toCurrency2!!.substring(
+                            toCurrency2!!.length - 4,
+                            toCurrency2!!.length - 1
+                        )
 
-        weekButton.setOnClickListener {
-            try{
-                resultTextView.text = "Loading..."
-                if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")") && toCurrency2!!.endsWith(")")){
-                    fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
-                    toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
-                    toCurrencyCode2 = toCurrency2!!.substring(toCurrency2!!.length-4, toCurrency2!!.length-1)
+                        val c = Calendar.getInstance()
+                        c.add(Calendar.DATE, -6)
+                        val startDate = sdf.format(c.getTime())
+                        val timeSeriesURL =
+                            "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + toCurrencyCode + "&symbols=" + fromCurrencyCode
+                        val timeSeriesURL2 =
+                            "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + toCurrencyCode2 + "&symbols=" + fromCurrencyCode
 
-                    val c = Calendar.getInstance()
-                    c.add(Calendar.DATE, -6)
-                    val startDate = sdf.format(c.getTime())
-                    val timeSeriesURL = "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + fromCurrencyCode + "&symbols=" + toCurrencyCode
-                    val timeSeriesURL2 = "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + fromCurrencyCode + "&symbols=" + toCurrencyCode2
+                        runBlocking {
+                            GlobalScope.async {
+                                getRateFromURL(timeSeriesURL)
+                                getRateFromURL2(timeSeriesURL2)
+                            }.await()
+                        }
 
-                    runBlocking {
-                        GlobalScope.async{
-                            getRateFromURL(timeSeriesURL)
-                            getRateFromURL2(timeSeriesURL2)
-                        }.await()}
+                        //println(makeChartURL())
 
-                    //println(makeChartURL())
+                        //----------------------COPYED FROM THE INTERNET----------------------\\
+                        val executor = Executors.newSingleThreadExecutor()
+                        val handler = Handler(Looper.getMainLooper())
+                        executor.execute {
+                            try {
+                                val `in` = java.net.URL(makeChartURL()).openStream()
+                                image = BitmapFactory.decodeStream(`in`)
 
-                    //----------------------COPYED FROM THE INTERNET----------------------\\
-                    val executor = Executors.newSingleThreadExecutor()
-                    val handler = Handler(Looper.getMainLooper())
-                    executor.execute {
-                        try {
-                            val `in` = java.net.URL(makeChartURL()).openStream()
-                            image = BitmapFactory.decodeStream(`in`)
+                                handler.post {
+                                    imageButton.setImageBitmap(image)
+                                }
 
-                            handler.post {
-                                imageButton.setImageBitmap(image)
+                                setMinMaxStreak()
+                                /*runOnUiThread{
+                                //resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
+                            }*/
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                    } else {
+                        //println("API ERROR Wrong currency codes")
+                    }
+                } catch (e: Exception) {
+                    showSnackbar("ERROR, Please try again or try another currency or date")
+                    //resultTextView!!.text = "ERROR, Please try again or try another currency or date"
+                }
+            }
+
+            monthButton.setOnClickListener {
+                try {
+                    showSnackbar("Loading...")
+                    //resultTextView.text = "Loading..."
+                    if (fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")") && toCurrency2!!.endsWith(
+                            ")"
+                        )
+                    ) {
+                        fromCurrencyCode = fromCurrency!!.substring(
+                            fromCurrency!!.length - 4,
+                            fromCurrency!!.length - 1
+                        )
+                        toCurrencyCode =
+                            toCurrency!!.substring(toCurrency!!.length - 4, toCurrency!!.length - 1)
+                        toCurrencyCode2 = toCurrency2!!.substring(
+                            toCurrency2!!.length - 4,
+                            toCurrency2!!.length - 1
+                        )
+
+                        val c = Calendar.getInstance()
+                        c.add(Calendar.DATE, -29)
+                        val startDate = sdf.format(c.getTime())
+                        val timeSeriesURL =
+                            "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + toCurrencyCode + "&symbols=" + fromCurrencyCode
+                        val timeSeriesURL2 =
+                            "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + toCurrencyCode2 + "&symbols=" + fromCurrencyCode
+
+                        runBlocking {
+                            GlobalScope.async {
+                                getRateFromURL(timeSeriesURL)
+                                getRateFromURL2(timeSeriesURL2)
+                            }.await()
+                        }
+
+                        //println(makeChartURL())
+
+                        //----------------------COPYED FROM THE INTERNET----------------------\\
+                        val executor = Executors.newSingleThreadExecutor()
+                        val handler = Handler(Looper.getMainLooper())
+                        executor.execute {
+                            try {
+                                val `in` = java.net.URL(makeChartURL()).openStream()
+                                image = BitmapFactory.decodeStream(`in`)
+
+                                handler.post {
+                                    imageButton.setImageBitmap(image)
+                                }
+
+                                setMinMaxStreak()
+                                /*runOnUiThread{
+                                //resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
+                            }*/
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                    } else {
+                        //println("API ERROR Wrong currency codes")
+                    }
+
+                } catch (e: Exception) {
+                    showSnackbar("ERROR, Please try again or try another currency or date")
+                    //resultTextView!!.text = "ERROR, Please try again or try another currency or date"
+                }
+            }
+
+            yearButton.setOnClickListener {
+                showSnackbar("Loading...")
+                //resultTextView.text = "Loading..."
+                try {
+                    if (fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")") && toCurrency2!!.endsWith(
+                            ")"
+                        )
+                    ) {
+                        fromCurrencyCode = fromCurrency!!.substring(
+                            fromCurrency!!.length - 4,
+                            fromCurrency!!.length - 1
+                        )
+                        toCurrencyCode =
+                            toCurrency!!.substring(toCurrency!!.length - 4, toCurrency!!.length - 1)
+                        toCurrencyCode2 = toCurrency2!!.substring(
+                            toCurrency2!!.length - 4,
+                            toCurrency2!!.length - 1
+                        )
+
+                        val c = Calendar.getInstance()
+                        c.add(Calendar.DATE, -364)
+                        val startDate = sdf.format(c.getTime())
+                        val timeSeriesURL =
+                            "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + toCurrencyCode + "&symbols=" + fromCurrencyCode
+                        val timeSeriesURL2 =
+                            "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + toCurrencyCode2 + "&symbols=" + fromCurrencyCode
+
+                        runBlocking {
+                            GlobalScope.async {
+                                getRateFromURL(timeSeriesURL)
+                                getRateFromURL2(timeSeriesURL2)
+                            }.await()
+                        }
+
+                        //println(makeChartURL())
+
+                        //----------------------COPYED FROM THE INTERNET----------------------\\
+                        val executor = Executors.newSingleThreadExecutor()
+                        val handler = Handler(Looper.getMainLooper())
+                        executor.execute {
+                            try {
+                                val `in` = java.net.URL(makeChartURL()).openStream()
+                                image = BitmapFactory.decodeStream(`in`)
+
+                                handler.post {
+                                    imageButton.setImageBitmap(image)
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
                             }
 
                             setMinMaxStreak()
-                            runOnUiThread{
-                                //resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
-                            }
-                        }
-                        catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
-                }
-                else{
-                    //println("API ERROR Wrong currency codes")
-                }
-            }
-            catch (e : Exception){
-                resultTextView!!.text = "ERROR, Please try again or try another currency or date"
-            }
-        }
-
-        monthButton.setOnClickListener {
-            try{
-                resultTextView.text = "Loading..."
-                if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")") && toCurrency2!!.endsWith(")")){
-                    fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
-                    toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
-                    toCurrencyCode2 = toCurrency2!!.substring(toCurrency2!!.length-4, toCurrency2!!.length-1)
-
-                    val c = Calendar.getInstance()
-                    c.add(Calendar.DATE, -29)
-                    val startDate = sdf.format(c.getTime())
-                    val timeSeriesURL = "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + fromCurrencyCode + "&symbols=" + toCurrencyCode
-                    val timeSeriesURL2 = "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + fromCurrencyCode + "&symbols=" + toCurrencyCode2
-
-
-                    runBlocking {
-                        GlobalScope.async{
-                            getRateFromURL(timeSeriesURL)
-                            getRateFromURL2(timeSeriesURL2)
-                        }.await()}
-
-                    //println(makeChartURL())
-
-                    //----------------------COPYED FROM THE INTERNET----------------------\\
-                    val executor = Executors.newSingleThreadExecutor()
-                    val handler = Handler(Looper.getMainLooper())
-                    executor.execute {
-                        try {
-                            val `in` = java.net.URL(makeChartURL()).openStream()
-                            image = BitmapFactory.decodeStream(`in`)
-
-                            handler.post {
-                                imageButton.setImageBitmap(image)
-                            }
-
-                            setMinMaxStreak()
-                            runOnUiThread{
-                                //resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
-                            }
-                        }
-                        catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
-                }
-                else{
-                    //println("API ERROR Wrong currency codes")
-                }
-            }
-            catch (e : Exception){
-                resultTextView!!.text = "ERROR, Please try again or try another currency or date"
-            }
-        }
-
-        yearButton.setOnClickListener {
-            resultTextView.text = "Loading..."
-            try{
-                if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")") && toCurrency2!!.endsWith(")")){
-                    fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
-                    toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
-                    toCurrencyCode2 = toCurrency2!!.substring(toCurrency2!!.length-4, toCurrency2!!.length-1)
-
-                    val c = Calendar.getInstance()
-                    c.add(Calendar.DATE, -364)
-                    val startDate = sdf.format(c.getTime())
-                    val timeSeriesURL = "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + fromCurrencyCode + "&symbols=" + toCurrencyCode
-                    val timeSeriesURL2 = "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + fromCurrencyCode + "&symbols=" + toCurrencyCode2
-
-                    runBlocking {
-                        GlobalScope.async{
-                            getRateFromURL(timeSeriesURL)
-                            getRateFromURL2(timeSeriesURL2)
-                        }.await()}
-
-                    //println(makeChartURL())
-
-                    //----------------------COPYED FROM THE INTERNET----------------------\\
-                    val executor = Executors.newSingleThreadExecutor()
-                    val handler = Handler(Looper.getMainLooper())
-                    executor.execute {
-                        try {
-                            val `in` = java.net.URL(makeChartURL()).openStream()
-                            image = BitmapFactory.decodeStream(`in`)
-
-                            handler.post {
-                                imageButton.setImageBitmap(image)
-                            }
-                        }
-                        catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-
-                        setMinMaxStreak()
-                        runOnUiThread{
+                            /*runOnUiThread{
                             //resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
+                        }*/
                         }
+                    } else {
+                        //println("API ERROR Wrong currency codes")
                     }
-                }
-                else{
-                    //println("API ERROR Wrong currency codes")
+                } catch (e: Exception) {
+                    showSnackbar("ERROR, Please try again or try another currency or date")
+                    //resultTextView!!.text = "ERROR, Please try again or try another currency or date"
                 }
             }
-            catch (e : Exception){
-                resultTextView!!.text = "ERROR, Please try again or try another currency or date"
-            }
-        }
 
-        imageButton.setOnClickListener {
-            if (image != null) {
-                mSaveMediaToStorage(image)
+            imageButton.setOnClickListener {
+                if (image != null) {
+                    mSaveMediaToStorage(image)
+                }
             }
         }
+        catch(e : Exception)
+        {
+            internetPopUp()
+        }
+    }
+
+    private fun internetPopUp(){
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Internet error!").setMessage("No internet, please try again!")
+            .setPositiveButton("Refresh"){dialog, which ->
+                finish();
+                startActivity(getIntent());
+            }
+            .show()
+    }
+
+    private fun showSnackbar(message: String){
+        Snackbar.make(getWindow().getDecorView().getRootView(), message, Snackbar.LENGTH_SHORT).show()
     }
 
     private fun setMinMaxStreak(){

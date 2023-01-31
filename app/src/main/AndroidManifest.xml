@@ -17,6 +17,12 @@
         android:theme="@style/Theme.CurrencyConverterApp"
         tools:targetApi="31">
         <activity
+            android:name=".CalculateAllActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CalculatorSelectorActivity"
+            android:exported="false" />
+        <activity
             android:name=".DoubleChartActivity"
             android:exported="false" />
         <activity
