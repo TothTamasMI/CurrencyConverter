@@ -17,25 +17,28 @@ import java.util.*
 class CalculateAllActivity : AppCompatActivity()  {
     //--------------------GLOBAL VARIABLES---------------------\\
     private var fromSpinner: SmartMaterialSpinner<String>? = null
-    private var toSpinner: SmartMaterialSpinner<String>? = null
 
     private var resultTextView: TextView ?= null
     private var amountEditText: EditText ?= null
 
     private var fromCurrency: String ?= null
-    private var toCurrency: String ?= null
     private var fromCurrencyCode: String ?= null
-    private var toCurrencyCode: String ?= null
     private var amount = 1.0
     private var date: String ?= null
+    private var result: String ?= null
 
     private val symbolsUrl = "https://api.exchangerate.host/symbols"
     private var symbolsList = mutableListOf<String>()
     private var codeList = mutableListOf<String>()
 
+    private var resultCodeList = mutableListOf<String>()
+    private var resultValueList = mutableListOf<Double>()
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_calculator)
+        setContentView(R.layout.activity_calculate_all)
         try{
 
             //---------------INTIT AND FILL SPINNERS---------------\\
@@ -113,15 +116,16 @@ class CalculateAllActivity : AppCompatActivity()  {
     private fun calculateCurrency() {
         //https://api.exchangerate.host/2020-04-04?base=USD
         try{
-            if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
+            if(fromCurrency!!.endsWith(")")){
                 fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
-                toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
                 var URL = "https://api.exchangerate.host/"+ date +"?base=" + fromCurrencyCode
 
                 runBlocking {
                     GlobalScope.async{
                         getRateFromURL(URL)
                     }.await()}
+                resultTextView!!.text = result
+
                 //var result = (rate!! * amount).toString()
 
                 //resultTextView!!.text = "" + amount + " " + fromCurrencyCode + " = " +  result + " " + toCurrencyCode
@@ -137,10 +141,8 @@ class CalculateAllActivity : AppCompatActivity()  {
 
     private fun initSpinners() {
         fromSpinner = findViewById(R.id.fromSpinner)
-        toSpinner = findViewById(R.id.toSpinner)
 
         fromSpinner?.item = symbolsList
-        toSpinner?.item = symbolsList
 
         fromSpinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(adapterView: AdapterView<*>, view: View, position: Int, id: Long) {
@@ -150,13 +152,6 @@ class CalculateAllActivity : AppCompatActivity()  {
             override fun onNothingSelected(adapterView: AdapterView<*>) {}
         }
 
-        toSpinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(adapterView: AdapterView<*>, view: View, position: Int, id: Long) {
-                toCurrency = symbolsList!![position]
-            }
-
-            override fun onNothingSelected(adapterView: AdapterView<*>) {}
-        }
     }
 
     private suspend fun getSymbols() {
@@ -185,7 +180,23 @@ class CalculateAllActivity : AppCompatActivity()  {
         withContext(Dispatchers.Default) {
             val response = URL(URL).readText()
             println(URL)
-            resultTextView!!.text =response
+            val resultString = response.substring(response.indexOf("rates") + 8).replace("}", "")
+            val values = resultString.split(",")
+            resultCodeList.clear()
+            resultValueList.clear()
+
+            for(element in values){
+                val code: String = element.substring(1, 4)
+                val value: Double = element.substring(6).toDouble()
+
+                resultCodeList.add(code)
+                resultValueList.add(value)
+
+                //System.out.println(code+ " "+  value)
+            }
+
+            System.out.println(resultString)
+            result = resultString
         }
     }
 
