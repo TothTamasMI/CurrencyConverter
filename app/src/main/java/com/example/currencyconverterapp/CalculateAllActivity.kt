@@ -13,12 +13,14 @@ import kotlinx.coroutines.*
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 class CalculateAllActivity : AppCompatActivity()  {
     //--------------------GLOBAL VARIABLES---------------------\\
     private var fromSpinner: SmartMaterialSpinner<String>? = null
 
-    private var resultTextView: TextView ?= null
+    //private var resultTextView: TextView ?= null
     private var amountEditText: EditText ?= null
 
     private var fromCurrency: String ?= null
@@ -77,12 +79,12 @@ class CalculateAllActivity : AppCompatActivity()  {
             }
 
             val CalculateButton: Button = findViewById(R.id.calculateButton)
-            resultTextView = findViewById(R.id.resultTextView)
-            val resultTextView = findViewById<TextView>(R.id.resultTextView)
+            //resultTextView = findViewById(R.id.resultTextView)
+            //val resultTextView = findViewById<TextView>(R.id.resultTextView)
 
             amountEditText = findViewById<EditText>(R.id.amountEditText)
 
-            resultTextView!!.movementMethod = ScrollingMovementMethod()
+            //resultTextView!!.movementMethod = ScrollingMovementMethod()
 
 
             CalculateButton.setOnClickListener {
@@ -92,8 +94,47 @@ class CalculateAllActivity : AppCompatActivity()  {
                 else{
                     amount = 1.0
                 }
-                calculateCurrency()
-            }}catch(e : Exception){
+
+                runBlocking {
+                    GlobalScope.async{
+                        calculateCurrency()
+                    }.await()
+                }
+
+                /*------------Copyed from the internet-----------------------------*/
+                // getting the recyclerview by its id
+                val recyclerview = findViewById<RecyclerView>(R.id.recyclerview)
+
+                // this creates a vertical layout Manager
+                recyclerview.layoutManager = LinearLayoutManager(this)
+
+                // ArrayList of class ItemsViewModel
+                val data = ArrayList<ItemsViewModel>()
+
+                // This loop will create 20 Views containing
+                // the image with the count of view
+                for (i in 0..resultCodeList.size-1) {
+                    val element : String = resultCodeList.get(i) + " = " + resultValueList.get(i) * amount
+                    if( element.length >= 20){
+                        data.add(ItemsViewModel(R.drawable.coin, element.substring(0,20)))
+                    }
+                    else{
+                        data.add(ItemsViewModel(R.drawable.coin, element))
+                    }
+
+                }
+
+                // This will pass the ArrayList to our Adapter
+                val adapter = CustomAdapter(data)
+
+                // Setting the Adapter with the recyclerview
+                recyclerview.adapter = adapter
+            }
+
+
+
+
+        }catch(e : Exception){
             internetPopUp()
         }
 
@@ -124,7 +165,7 @@ class CalculateAllActivity : AppCompatActivity()  {
                     GlobalScope.async{
                         getRateFromURL(URL)
                     }.await()}
-                resultTextView!!.text = result
+                //resultTextView!!.text = result
 
                 //var result = (rate!! * amount).toString()
 
@@ -135,7 +176,7 @@ class CalculateAllActivity : AppCompatActivity()  {
             }
         }
         catch (e : Exception){
-            resultTextView!!.text = "ERROR, Please try again or try another currency or date"
+            //resultTextView!!.text = "ERROR, Please try again or try another currency or date"
         }
     }
 
