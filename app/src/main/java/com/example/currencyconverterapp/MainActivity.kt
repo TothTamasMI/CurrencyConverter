@@ -12,15 +12,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val ChartButon = findViewById<Button>(R.id.ChartButton)
-        val CalculatorButton = findViewById<Button>(R.id.CalculatorButton)
+        val chartButon = findViewById<Button>(R.id.ChartButton)
+        val calculatorButton = findViewById<Button>(R.id.CalculatorButton)
 
-        ChartButon.setOnClickListener {
+        chartButon.setOnClickListener {
             val i = Intent(this, ChartSelectorActivity::class.java)
             startActivity(i)
         }
 
-        CalculatorButton.setOnClickListener{
+        calculatorButton.setOnClickListener{
             val i = Intent(this,CalculatorSelectorActivity::class.java)
             startActivity(i)
         }

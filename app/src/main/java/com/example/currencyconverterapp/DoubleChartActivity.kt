@@ -24,24 +24,27 @@ import java.util.*
 import java.util.concurrent.Executors
 
 class DoubleChartActivity : AppCompatActivity() {
+    //----------------------------GLOBAL VARIABLES---------------------------\\
     private var fromSpinner: SmartMaterialSpinner<String>? = null
     private var toSpinner: SmartMaterialSpinner<String>? = null
     private var toSpinner2: SmartMaterialSpinner<String>? = null
 
     private var date: String ?= null
     private val symbolsUrl = "https://api.exchangerate.host/symbols"
-    private var symbolsList = mutableListOf<String>()
-    private var timeList = mutableListOf<String>()
-    private var dataList = mutableListOf<Double>()
-    private var timeList2 = mutableListOf<String>()
-    private var dataList2 = mutableListOf<Double>()
-    private var codeList = mutableListOf<String>()
     private var fromCurrency: String ?= null
     private var toCurrency: String ?= null
     private var toCurrency2: String ?= null
     private var fromCurrencyCode: String ?= null
     private var toCurrencyCode: String ?= null
     private var toCurrencyCode2: String ?= null
+
+    private var symbolsList = mutableListOf<String>()
+    private var codeList = mutableListOf<String>()
+    private var timeList = mutableListOf<String>()
+    private var dataList = mutableListOf<Double>()
+    private var timeList2 = mutableListOf<String>()
+    private var dataList2 = mutableListOf<Double>()
+
     private var min: Double ?= null
     private var max: Double ?= null
     private var minDate: String ?= null
@@ -53,7 +56,10 @@ class DoubleChartActivity : AppCompatActivity() {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_double_chart)
+
         try {
+
+        //------------------------INTIT AND FILL SPINNERS--------------------\\
             runBlocking {
                 GlobalScope.async {
                     getSymbols()
@@ -61,22 +67,20 @@ class DoubleChartActivity : AppCompatActivity() {
                 initSpinners()
             }
 
+        //------------------------INIT AND DEFINE VARIABLES------------------\\
             val imageButton = findViewById<ImageButton>(R.id.resultChart)
             val weekButton = findViewById<Button>(R.id.weekButton)
             val monthButton = findViewById<Button>(R.id.monthButton)
             val yearButton = findViewById<Button>(R.id.yearButton)
-            //val resultTextView = findViewById<TextView>(R.id.chartResultTextView)
-
             var image: Bitmap? = null
-
             val sdf = SimpleDateFormat("yyyy-MM-dd")
             val currentDate = sdf.format(Date())
             date = currentDate
 
+            //------------------------MAKE WEEK BUTTON-----------------------\\
             weekButton.setOnClickListener {
                 try {
                     showSnackbar("Loading...")
-                    //resultTextView.text = "Loading..."
                     if (fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")") && toCurrency2!!.endsWith(
                             ")"
                         )
@@ -107,9 +111,7 @@ class DoubleChartActivity : AppCompatActivity() {
                             }.await()
                         }
 
-                        //println(makeChartURL())
-
-                        //----------------------COPYED FROM THE INTERNET----------------------\\
+                        //--------LOAD IMAGE---------------------------------\\
                         val executor = Executors.newSingleThreadExecutor()
                         val handler = Handler(Looper.getMainLooper())
                         executor.execute {
@@ -121,27 +123,21 @@ class DoubleChartActivity : AppCompatActivity() {
                                     imageButton.setImageBitmap(image)
                                 }
 
-                                setMinMaxStreak()
-                                /*runOnUiThread{
-                                //resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
-                            }*/
+                                //setMinMaxStreak()
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }
                         }
-                    } else {
-                        //println("API ERROR Wrong currency codes")
                     }
                 } catch (e: Exception) {
                     showSnackbar("ERROR, Please try again or try another currency or date")
-                    //resultTextView!!.text = "ERROR, Please try again or try another currency or date"
                 }
             }
 
+            //------------------------MAKE MONTH BUTTON----------------------\\
             monthButton.setOnClickListener {
                 try {
                     showSnackbar("Loading...")
-                    //resultTextView.text = "Loading..."
                     if (fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")") && toCurrency2!!.endsWith(
                             ")"
                         )
@@ -172,9 +168,7 @@ class DoubleChartActivity : AppCompatActivity() {
                             }.await()
                         }
 
-                        //println(makeChartURL())
-
-                        //----------------------COPYED FROM THE INTERNET----------------------\\
+                        //--------LOAD IMAGE---------------------------------\\
                         val executor = Executors.newSingleThreadExecutor()
                         val handler = Handler(Looper.getMainLooper())
                         executor.execute {
@@ -186,27 +180,21 @@ class DoubleChartActivity : AppCompatActivity() {
                                     imageButton.setImageBitmap(image)
                                 }
 
-                                setMinMaxStreak()
-                                /*runOnUiThread{
-                                //resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
-                            }*/
+                                //setMinMaxStreak()
+
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }
                         }
-                    } else {
-                        //println("API ERROR Wrong currency codes")
                     }
-
                 } catch (e: Exception) {
                     showSnackbar("ERROR, Please try again or try another currency or date")
-                    //resultTextView!!.text = "ERROR, Please try again or try another currency or date"
                 }
             }
 
+            //------------------------MAKE YEAR BUTTON-----------------------\\
             yearButton.setOnClickListener {
                 showSnackbar("Loading...")
-                //resultTextView.text = "Loading..."
                 try {
                     if (fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")") && toCurrency2!!.endsWith(
                             ")"
@@ -238,9 +226,7 @@ class DoubleChartActivity : AppCompatActivity() {
                             }.await()
                         }
 
-                        //println(makeChartURL())
-
-                        //----------------------COPYED FROM THE INTERNET----------------------\\
+                        //--------LOAD IMAGE---------------------------------\\
                         val executor = Executors.newSingleThreadExecutor()
                         val handler = Handler(Looper.getMainLooper())
                         executor.execute {
@@ -255,32 +241,27 @@ class DoubleChartActivity : AppCompatActivity() {
                                 e.printStackTrace()
                             }
 
-                            setMinMaxStreak()
-                            /*runOnUiThread{
-                            //resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
-                        }*/
+                            //setMinMaxStreak()
                         }
-                    } else {
-                        //println("API ERROR Wrong currency codes")
                     }
                 } catch (e: Exception) {
                     showSnackbar("ERROR, Please try again or try another currency or date")
-                    //resultTextView!!.text = "ERROR, Please try again or try another currency or date"
                 }
             }
 
+            //------------------------MAKE IMAGE DOWNLOADABLE----------------\\
             imageButton.setOnClickListener {
                 if (image != null) {
                     mSaveMediaToStorage(image)
                 }
             }
         }
-        catch(e : Exception)
-        {
+        catch(e : Exception) {
             internetPopUp()
         }
     }
 
+    //----------------------------MAKE "NO INTERNET" POP UP------------------\\
     private fun internetPopUp(){
         MaterialAlertDialogBuilder(this)
             .setTitle("Internet error!").setMessage("No internet, please try again!")
@@ -291,11 +272,13 @@ class DoubleChartActivity : AppCompatActivity() {
             .show()
     }
 
+    //----------------------------SHOW MESSAGE IN SNACKBAR-------------------\\
     private fun showSnackbar(message: String){
         Snackbar.make(getWindow().getDecorView().getRootView(), message, Snackbar.LENGTH_SHORT).show()
     }
 
-    private fun setMinMaxStreak(){
+    //----------------------------SET THE MIN, MAX, STREAK VALUES------------\\
+    /*private fun setMinMaxStreak(){
         min = dataList.get(0)
         max = dataList.get(0)
         minDate = ""
@@ -320,8 +303,9 @@ class DoubleChartActivity : AppCompatActivity() {
             }
         }
         actual = dataList.get(dataList.size-1)
-    }
+    }*/
 
+    //----------------------------INIT THE SPINNERS--------------------------\\
     private fun initSpinners() {
         fromSpinner = findViewById(R.id.fromSpinner)
         toSpinner = findViewById(R.id.toSpinner)
@@ -356,6 +340,7 @@ class DoubleChartActivity : AppCompatActivity() {
         }
     }
 
+    //----------------------------GET THE CURRENCY CODES FROM THE API--------\\
     private suspend fun getSymbols() {
         withContext(Dispatchers.Default) {
             val response = URL(symbolsUrl).readText()
@@ -378,9 +363,9 @@ class DoubleChartActivity : AppCompatActivity() {
         }
     }
 
+    //----------------------------GET THE RATE FROM THE API------------------\\
     private suspend fun getRateFromURL(URL : String){
         withContext(Dispatchers.Default) {
-            //println(URL)
             val response = URL(URL).readText()
             var datas = response.substring(response.indexOf("\"rates\":{") + 10)
             timeList.clear()
@@ -389,15 +374,13 @@ class DoubleChartActivity : AppCompatActivity() {
                 val timeAndData = data.replace("}}}", "")
                 timeList.add(timeAndData.substring(0, 10))
                 dataList.add((timeAndData.substring(19)).toDouble())
-                //println(timeAndData.substring(0, 10))
-                //println(timeAndData.substring(19))
             }
         }
     }
 
+    //----------------------------GET THE RATE FROM THE API------------------\\
     private suspend fun getRateFromURL2(URL: String){
         withContext(Dispatchers.Default) {
-            //println(URL)
             val response = URL(URL).readText()
             var datas = response.substring(response.indexOf("\"rates\":{") + 10)
             timeList2.clear()
@@ -406,12 +389,11 @@ class DoubleChartActivity : AppCompatActivity() {
                 val timeAndData = data.replace("}}}", "")
                 timeList2.add(timeAndData.substring(0, 10))
                 dataList2.add((timeAndData.substring(19)).toDouble())
-                //println(timeAndData.substring(0, 10))
-                //println(timeAndData.substring(19))
             }
         }
     }
 
+    //----------------------------MAKE THE URL FOR THE CHART IMAGE-----------\\
     private fun makeChartURL():String{
         var chartURL = "https://quickchart.io//chart?c={ type: 'line', data: { labels: ["
         if(timeList.size < 200){
@@ -468,7 +450,6 @@ class DoubleChartActivity : AppCompatActivity() {
             }
         }
         chartURL += "], fill: false, }"
-        //chartURL += ", backgroundColor: 'rgb(54, 162, 235)', borderColor: 'rgb(54, 162, 235)', data: ["
         chartURL+= " ], }, options: { title: { display: true, text:"
         chartURL += "'Data for the last " + dataList.size + " days'"
         chartURL += ", },scales: {yAxes: [{ticks: {beginAtZero: false,},},],},},}"
@@ -476,6 +457,8 @@ class DoubleChartActivity : AppCompatActivity() {
         return chartURL
     }
 
+    //----------------------------DOWNLOAD THE IMAGE-------------------------\\
+    //----------------------------COPIED FROM THE INTERNET-------------------\\
     private fun mSaveMediaToStorage(bitmap: Bitmap?) {
         //-------------------THE WHOLE FUNCTION COPYED FROM THE INTERNET------------------\\
         val filename = "${System.currentTimeMillis()}.jpg"

@@ -16,7 +16,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class CalculatorActivity : AppCompatActivity()  {
-    //--------------------GLOBAL VARIABLES---------------------\\
+    //----------------------------GLOBAL VARIABLES---------------------------\\
     private var fromSpinner: SmartMaterialSpinner<String>? = null
     private var toSpinner: SmartMaterialSpinner<String>? = null
 
@@ -39,66 +39,66 @@ class CalculatorActivity : AppCompatActivity()  {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calculator)
+
         try{
 
-        //---------------INTIT AND FILL SPINNERS---------------\\
-        runBlocking {
-            GlobalScope.async{
-                getSymbols()
-            }.await()
-            initSpinners()
-        }
-
-        //--------------------INIT CALENDAR--------------------\\
-        val sdf = SimpleDateFormat("yyyy-MM-dd")
-        val currentDate = sdf.format(Date())
-
-        val c = Calendar.getInstance()
-        val year = c.get(Calendar.YEAR)
-        val month = c.get(Calendar.MONTH)
-        val day = c.get(Calendar.DAY_OF_MONTH)
-        val datePickerButton = findViewById<Button>(R.id.datePickerButton)
-        datePickerButton.text = currentDate
-        date = currentDate
-
-        datePickerButton.setOnClickListener {
-            val datePickerDialog = DatePickerDialog(
-                this, DatePickerDialog.OnDateSetListener{view, mYear, mMonth, mDay ->
-                    val mMonthCopy = mMonth + 1
-                    var mMonthString = mMonthCopy.toString()
-                    if (mMonthCopy < 10){
-                        mMonthString = "" + 0 + mMonthString
-                    }
-
-                    datePickerButton.text = "" + mYear +"-" + mMonthString + "-" + mDay
-                    date = "" + mYear +"-" + mMonthString + "-" + mDay
-                }, year, month, day)
-            datePickerDialog.show()
-        }
-
-        val CalculateButton: Button = findViewById(R.id.calculateButton)
-        resultTextView = findViewById(R.id.resultTextView)
-        val resultTextView = findViewById<TextView>(R.id.resultTextView)
-
-        amountEditText = findViewById<EditText>(R.id.amountEditText)
-
-        resultTextView!!.movementMethod = ScrollingMovementMethod()
-
-
-        CalculateButton.setOnClickListener {
-            if (amountEditText!!.text.toString() != ""){
-                amount = amountEditText!!.text.toString().toDouble()
+        //------------------------INTIT AND FILL SPINNERS--------------------\\
+            runBlocking {
+                GlobalScope.async{
+                    getSymbols()
+                }.await()
+                initSpinners()
             }
-            else{
-                amount = 1.0
+
+        //------------------------INIT AND DEFINE VARIABLES------------------\\
+            val sdf = SimpleDateFormat("yyyy-MM-dd")
+            val currentDate = sdf.format(Date())
+            val c = Calendar.getInstance()
+            val year = c.get(Calendar.YEAR)
+            val month = c.get(Calendar.MONTH)
+            val day = c.get(Calendar.DAY_OF_MONTH)
+            val datePickerButton = findViewById<Button>(R.id.datePickerButton)
+
+            val CalculateButton: Button = findViewById(R.id.calculateButton)
+            resultTextView = findViewById(R.id.resultTextView)
+            amountEditText = findViewById<EditText>(R.id.amountEditText)
+            resultTextView!!.movementMethod = ScrollingMovementMethod()
+
+            datePickerButton.text = currentDate
+            date = currentDate
+
+        //------------------------MAKE CALENDAR PICKER-----------------------\\
+            datePickerButton.setOnClickListener {
+                val datePickerDialog = DatePickerDialog(
+                    this, DatePickerDialog.OnDateSetListener{view, mYear, mMonth, mDay ->
+                        val mMonthCopy = mMonth + 1
+                        var mMonthString = mMonthCopy.toString()
+                        if (mMonthCopy < 10){
+                            mMonthString = "" + 0 + mMonthString
+                        }
+
+                        datePickerButton.text = "" + mYear +"-" + mMonthString + "-" + mDay
+                        date = "" + mYear +"-" + mMonthString + "-" + mDay
+                    }, year, month, day)
+                datePickerDialog.show()
             }
-            calculateCurrency()
-        }}catch(e : Exception){
+
+        //------------------------MAKE CALCULATE BUTTON----------------------\\
+            CalculateButton.setOnClickListener {
+                if (amountEditText!!.text.toString() != ""){
+                    amount = amountEditText!!.text.toString().toDouble()
+                }
+                else{
+                    amount = 1.0
+                }
+                calculateCurrency()
+            }
+        }catch(e : Exception){
             internetPopUp()
         }
-
     }
 
+    //----------------------------MAKE "NO INTERNET" POP UP------------------\\
     private fun internetPopUp(){
         MaterialAlertDialogBuilder(this)
             .setTitle("Internet error!").setMessage("No internet, please try again!")
@@ -109,12 +109,8 @@ class CalculatorActivity : AppCompatActivity()  {
             .show()
     }
 
-    private fun showSnackbar(message: String){
-        Snackbar.make(getWindow().getDecorView().getRootView(), message, Snackbar.LENGTH_SHORT).show()
-    }
-
+    //----------------------------MAKE THE CALCULATE LOGIC-------------------\\
     private fun calculateCurrency() {
-        //https://api.exchangerate.host/2020-04-04?base=USD&symbols=EUR
         try{
             if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
                 fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
@@ -138,6 +134,7 @@ class CalculatorActivity : AppCompatActivity()  {
         }
     }
 
+    //----------------------------INIT THE SPINNERS--------------------------\\
     private fun initSpinners() {
         fromSpinner = findViewById(R.id.fromSpinner)
         toSpinner = findViewById(R.id.toSpinner)
@@ -162,6 +159,7 @@ class CalculatorActivity : AppCompatActivity()  {
         }
     }
 
+    //----------------------------GET THE CURRENCY CODES FROM THE API--------\\
     private suspend fun getSymbols() {
         withContext(Dispatchers.Default) {
             val response = URL(symbolsUrl).readText()
@@ -184,6 +182,7 @@ class CalculatorActivity : AppCompatActivity()  {
         }
     }
 
+    //----------------------------GET THE RATE FROM THE API------------------\\
     private suspend fun getRateFromURL(URL : String){
         withContext(Dispatchers.Default) {
             val response = URL(URL).readText()

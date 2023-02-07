@@ -18,10 +18,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class CalculateAllActivity : AppCompatActivity()  {
-    //--------------------GLOBAL VARIABLES---------------------\\
+    //----------------------------GLOBAL VARIABLES---------------------------\\
     private var fromSpinner: SmartMaterialSpinner<String>? = null
 
-    //private var resultTextView: TextView ?= null
     private var amountEditText: EditText ?= null
 
     private var fromCurrency: String ?= null
@@ -33,11 +32,8 @@ class CalculateAllActivity : AppCompatActivity()  {
     private val symbolsUrl = "https://api.exchangerate.host/symbols"
     private var symbolsList = mutableListOf<String>()
     private var codeList = mutableListOf<String>()
-
     private var resultCodeList = mutableListOf<String>()
     private var resultValueList = mutableListOf<Double>()
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -45,18 +41,17 @@ class CalculateAllActivity : AppCompatActivity()  {
         setContentView(R.layout.activity_calculate_all)
         try{
 
-            //---------------INTIT AND FILL SPINNERS---------------\\
+            //------------------------INTIT AND FILL SPINNERS--------------------\\
             runBlocking {
                 GlobalScope.async{
                     getSymbols()
                 }.await()
-                initSpinners()
+                initSpinner()
             }
 
-            //--------------------INIT CALENDAR--------------------\\
+            //------------------------INIT AND DEFINE VARIABLES------------------\\
             val sdf = SimpleDateFormat("yyyy-MM-dd")
             val currentDate = sdf.format(Date())
-
             val c = Calendar.getInstance()
             val year = c.get(Calendar.YEAR)
             val month = c.get(Calendar.MONTH)
@@ -65,6 +60,10 @@ class CalculateAllActivity : AppCompatActivity()  {
             datePickerButton.text = currentDate
             date = currentDate
 
+            val CalculateButton: Button = findViewById(R.id.calculateButton)
+            amountEditText = findViewById<EditText>(R.id.amountEditText)
+
+            //------------------------MAKE CALENDAR PICKER-----------------------\\
             datePickerButton.setOnClickListener {
                 val datePickerDialog = DatePickerDialog(
                     this, DatePickerDialog.OnDateSetListener{view, mYear, mMonth, mDay ->
@@ -80,15 +79,7 @@ class CalculateAllActivity : AppCompatActivity()  {
                 datePickerDialog.show()
             }
 
-            val CalculateButton: Button = findViewById(R.id.calculateButton)
-            //resultTextView = findViewById(R.id.resultTextView)
-            //val resultTextView = findViewById<TextView>(R.id.resultTextView)
-
-            amountEditText = findViewById<EditText>(R.id.amountEditText)
-
-            //resultTextView!!.movementMethod = ScrollingMovementMethod()
-
-
+            //------------------------MAKE CALCULATE BUTTON----------------------\\
             CalculateButton.setOnClickListener {
                 if (amountEditText!!.text.toString() != ""){
                     amount = amountEditText!!.text.toString().toDouble()
@@ -103,18 +94,11 @@ class CalculateAllActivity : AppCompatActivity()  {
                     }.await()
                 }
 
-                /*------------Copyed from the internet-----------------------------*/
-                // getting the recyclerview by its id
+                //----------------MAKE RECYCLER VIEW + CARDVIEW--------------\\
+                //----------------COPIED FROM THE INTERNET-------------------\\
                 val recyclerview = findViewById<RecyclerView>(R.id.recyclerview)
-
-                // this creates a vertical layout Manager
                 recyclerview.layoutManager = LinearLayoutManager(this)
-
-                // ArrayList of class ItemsViewModel
                 val data = ArrayList<ItemsViewModel>()
-
-                // This loop will create 20 Views containing
-                // the image with the count of view
                 for (i in 0..resultCodeList.size-1) {
                     val element : String = resultCodeList.get(i) + " = " + resultValueList.get(i) * amount
                     if( element.length >= 20){
@@ -125,23 +109,16 @@ class CalculateAllActivity : AppCompatActivity()  {
                     }
 
                 }
-
-                // This will pass the ArrayList to our Adapter
                 val adapter = CustomAdapter(data)
-
-                // Setting the Adapter with the recyclerview
                 recyclerview.adapter = adapter
             }
-
-
-
-
-        }catch(e : Exception){
+        }
+        catch(e : Exception){
             internetPopUp()
         }
-
     }
 
+    //----------------------------MAKE "NO INTERNET" POP UP------------------\\
     private fun internetPopUp(){
         MaterialAlertDialogBuilder(this)
             .setTitle("Internet error!").setMessage("No internet, please try again!")
@@ -152,12 +129,13 @@ class CalculateAllActivity : AppCompatActivity()  {
             .show()
     }
 
+    //----------------------------SHOW MESSAGE IN SNACKBAR-------------------\\
     private fun showSnackbar(message: String){
         Snackbar.make(getWindow().getDecorView().getRootView(), message, Snackbar.LENGTH_SHORT).show()
     }
 
+    //----------------------------MAKE THE CALCULATE LOGIC-------------------\\
     private fun calculateCurrency() {
-        //https://api.exchangerate.host/2020-04-04?base=USD
         try{
             if(fromCurrency!!.endsWith(")")){
                 fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
@@ -167,23 +145,18 @@ class CalculateAllActivity : AppCompatActivity()  {
                     GlobalScope.async{
                         getRateFromURL(URL)
                     }.await()}
-                //resultTextView!!.text = result
-
-                //var result = (rate!! * amount).toString()
-
-                //resultTextView!!.text = "" + amount + " " + fromCurrencyCode + " = " +  result + " " + toCurrencyCode
             }
             else{
                 println("API ERROR Wrong currency codes")
             }
         }
         catch (e : Exception){
-            //resultTextView!!.text = "ERROR, Please try again or try another currency or date"
             showSnackbar("ERROR, Please try again or try another currency or date")
         }
     }
 
-    private fun initSpinners() {
+    //----------------------------INIT THE SPINNER---------------------------\\
+    private fun initSpinner() {
         fromSpinner = findViewById(R.id.fromSpinner)
 
         fromSpinner?.item = symbolsList
@@ -192,12 +165,11 @@ class CalculateAllActivity : AppCompatActivity()  {
             override fun onItemSelected(adapterView: AdapterView<*>, view: View, position: Int, id: Long) {
                 fromCurrency = symbolsList!![position]
             }
-
             override fun onNothingSelected(adapterView: AdapterView<*>) {}
         }
-
     }
 
+    //----------------------------GET THE CURRENCY CODES FROM THE API--------\\
     private suspend fun getSymbols() {
         withContext(Dispatchers.Default) {
             val response = URL(symbolsUrl).readText()
@@ -220,6 +192,7 @@ class CalculateAllActivity : AppCompatActivity()  {
         }
     }
 
+    //----------------------------GET THE RATE FROM THE API------------------\\
     private suspend fun getRateFromURL(URL : String){
         withContext(Dispatchers.Default) {
             val response = URL(URL).readText()
@@ -235,10 +208,7 @@ class CalculateAllActivity : AppCompatActivity()  {
 
                 resultCodeList.add(code)
                 resultValueList.add(value)
-
-                //System.out.println(code+ " "+  value)
             }
-
             System.out.println(resultString)
             result = resultString
         }

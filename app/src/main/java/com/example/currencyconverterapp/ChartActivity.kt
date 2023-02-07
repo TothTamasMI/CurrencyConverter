@@ -23,25 +23,28 @@ import java.util.*
 import java.util.concurrent.Executors
 
 class ChartActivity : AppCompatActivity() {
+    //----------------------------GLOBAL VARIABLES---------------------------\\
     private var fromSpinner: SmartMaterialSpinner<String>? = null
     private var toSpinner: SmartMaterialSpinner<String>? = null
 
-    private var date: String ?= null
-    private val symbolsUrl = "https://api.exchangerate.host/symbols"
-    private var symbolsList = mutableListOf<String>()
-    private var timeList = mutableListOf<String>()
-    private var dataList = mutableListOf<Double>()
-    private var codeList = mutableListOf<String>()
     private var fromCurrency: String ?= null
     private var toCurrency: String ?= null
     private var fromCurrencyCode: String ?= null
     private var toCurrencyCode: String ?= null
+
+    private var date: String ?= null
     private var min: Double ?= null
     private var max: Double ?= null
     private var minDate: String ?= null
     private var maxDate: String ?= null
     private var streak: Int ?= null
     private var actual: Double ?= null
+
+    private val symbolsUrl = "https://api.exchangerate.host/symbols"
+    private var symbolsList = mutableListOf<String>()
+    private var timeList = mutableListOf<String>()
+    private var dataList = mutableListOf<Double>()
+    private var codeList = mutableListOf<String>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,54 +53,150 @@ class ChartActivity : AppCompatActivity() {
         setContentView(R.layout.activity_chart)
 
         try{
-        runBlocking {
-            GlobalScope.async{
-                getSymbols()
-            }.await()
-            initSpinners()
-        }
 
-        val imageButton = findViewById<ImageButton>(R.id.resultChart)
-        val weekButton = findViewById<Button>(R.id.weekButton)
-        val monthButton = findViewById<Button>(R.id.monthButton)
-        val yearButton = findViewById<Button>(R.id.yearButton)
-        val resultTextView = findViewById<TextView>(R.id.chartResultTextView)
+        //------------------------INTIT AND FILL SPINNERS--------------------\\
+            runBlocking {
+                GlobalScope.async{
+                    getSymbols()
+                }.await()
+                initSpinners()
+            }
 
-        var image: Bitmap? = null
+        //------------------------INIT AND DEFINE VARIABLES------------------\\
+            val imageButton = findViewById<ImageButton>(R.id.resultChart)
+            val weekButton = findViewById<Button>(R.id.weekButton)
+            val monthButton = findViewById<Button>(R.id.monthButton)
+            val yearButton = findViewById<Button>(R.id.yearButton)
+            val resultTextView = findViewById<TextView>(R.id.chartResultTextView)
+            var image: Bitmap? = null
+            val sdf = SimpleDateFormat("yyyy-MM-dd")
+            val currentDate = sdf.format(Date())
+            date = currentDate
 
-        val sdf = SimpleDateFormat("yyyy-MM-dd")
-        val currentDate = sdf.format(Date())
-        date = currentDate
+            //------------------------MAKE WEEK BUTTON-----------------------\\
+            weekButton.setOnClickListener {
+                try{
+                    resultTextView.text = "Loading..."
+                    if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
+                        fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
+                        toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
 
-        weekButton.setOnClickListener {
-            try{
+                        val c = Calendar.getInstance()
+                        c.add(Calendar.DATE, -6)
+                        val startDate = sdf.format(c.getTime())
+                        val timeSeriesURL = "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + fromCurrencyCode + "&symbols=" + toCurrencyCode
+
+                        runBlocking {
+                            GlobalScope.async{
+                                getRateFromURL(timeSeriesURL)
+                            }.await()}
+
+                        //--------LOAD IMAGE---------------------------------\\
+                        val executor = Executors.newSingleThreadExecutor()
+                        val handler = Handler(Looper.getMainLooper())
+                        executor.execute {
+                            try {
+                                val `in` = java.net.URL(makeChartURL()).openStream()
+                                image = BitmapFactory.decodeStream(`in`)
+
+                                handler.post {
+                                    imageButton.setImageBitmap(image)
+                                }
+
+                                setMinMaxStreak()
+                                runOnUiThread{
+                                    resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
+                                }
+                            }
+                            catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+                }
+                catch (e : Exception){
+                    resultTextView!!.text = "ERROR, Please try again or try another currency or date"
+                }
+            }
+
+            //------------------------MAKE MONTH BUTTON----------------------\\
+            monthButton.setOnClickListener {
+                try{
+                    resultTextView.text = "Loading..."
+                    if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
+                        fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
+                        toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
+
+                        val c = Calendar.getInstance()
+                        c.add(Calendar.DATE, -29)
+                        val startDate = sdf.format(c.getTime())
+                        val timeSeriesURL = "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + fromCurrencyCode + "&symbols=" + toCurrencyCode
+
+                        runBlocking {
+                            GlobalScope.async{
+                                getRateFromURL(timeSeriesURL)
+                            }.await()}
+
+                        //--------LOAD IMAGE---------------------------------\\
+                        val executor = Executors.newSingleThreadExecutor()
+                        val handler = Handler(Looper.getMainLooper())
+                        executor.execute {
+                            try {
+                                val `in` = java.net.URL(makeChartURL()).openStream()
+                                image = BitmapFactory.decodeStream(`in`)
+
+                                handler.post {
+                                    imageButton.setImageBitmap(image)
+                                }
+
+                                setMinMaxStreak()
+                                runOnUiThread{
+                                    resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
+                                }
+                            }
+                            catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+                }
+                catch (e : Exception){
+                    resultTextView!!.text = "ERROR, Please try again or try another currency or date"
+                }
+            }
+
+            //------------------------MAKE YEAR BUTTON-----------------------\\
+            yearButton.setOnClickListener {
                 resultTextView.text = "Loading..."
-                if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
-                    fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
-                    toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
+                try{
+                    if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
+                        fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
+                        toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
 
-                    val c = Calendar.getInstance()
-                    c.add(Calendar.DATE, -6)
-                    val startDate = sdf.format(c.getTime())
-                    val timeSeriesURL = "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + fromCurrencyCode + "&symbols=" + toCurrencyCode
+                        val c = Calendar.getInstance()
+                        c.add(Calendar.DATE, -364)
+                        val startDate = sdf.format(c.getTime())
+                        val timeSeriesURL = "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + fromCurrencyCode + "&symbols=" + toCurrencyCode
 
-                    runBlocking {
-                        GlobalScope.async{
-                            getRateFromURL(timeSeriesURL)
-                        }.await()}
+                        runBlocking {
+                            GlobalScope.async{
+                                getRateFromURL(timeSeriesURL)
+                            }.await()}
 
-                    //println(makeChartURL())
+                        //--------LOAD IMAGE---------------------------------\\
+                        val executor = Executors.newSingleThreadExecutor()
+                        val handler = Handler(Looper.getMainLooper())
+                        executor.execute {
+                            try {
+                                val `in` = java.net.URL(makeChartURL()).openStream()
+                                image = BitmapFactory.decodeStream(`in`)
 
-                    //----------------------COPYED FROM THE INTERNET----------------------\\
-                    val executor = Executors.newSingleThreadExecutor()
-                    val handler = Handler(Looper.getMainLooper())
-                    executor.execute {
-                        try {
-                            val `in` = java.net.URL(makeChartURL()).openStream()
-                            image = BitmapFactory.decodeStream(`in`)
-
-                            handler.post {
-                                imageButton.setImageBitmap(image)
+                                handler.post {
+                                    imageButton.setImageBitmap(image)
+                                }
+                            }
+                            catch (e: Exception) {
+                                e.printStackTrace()
                             }
 
                             setMinMaxStreak()
@@ -105,131 +204,26 @@ class ChartActivity : AppCompatActivity() {
                                 resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
                             }
                         }
-                        catch (e: Exception) {
-                            e.printStackTrace()
-                        }
                     }
                 }
-                else{
-                    //println("API ERROR Wrong currency codes")
+                catch (e : Exception){
+                    resultTextView!!.text = "ERROR, Please try again or try another currency or date"
                 }
             }
-            catch (e : Exception){
-                resultTextView!!.text = "ERROR, Please try again or try another currency or date"
+
+            //------------------------MAKE IMAGE DOWNLOADABLE----------------\\
+            imageButton.setOnClickListener {
+                if (image != null) {
+                    mSaveMediaToStorage(image)
+                }
             }
         }
-
-        monthButton.setOnClickListener {
-            try{
-                resultTextView.text = "Loading..."
-                if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
-                    fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
-                    toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
-
-                    val c = Calendar.getInstance()
-                    c.add(Calendar.DATE, -29)
-                    val startDate = sdf.format(c.getTime())
-                    val timeSeriesURL = "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + fromCurrencyCode + "&symbols=" + toCurrencyCode
-
-                    runBlocking {
-                        GlobalScope.async{
-                            getRateFromURL(timeSeriesURL)
-                        }.await()}
-
-                    //println(makeChartURL())
-
-                    //----------------------COPYED FROM THE INTERNET----------------------\\
-                    val executor = Executors.newSingleThreadExecutor()
-                    val handler = Handler(Looper.getMainLooper())
-                    executor.execute {
-                        try {
-                            val `in` = java.net.URL(makeChartURL()).openStream()
-                            image = BitmapFactory.decodeStream(`in`)
-
-                            handler.post {
-                                imageButton.setImageBitmap(image)
-                            }
-
-                            setMinMaxStreak()
-                            runOnUiThread{
-                                resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
-                            }
-                        }
-                        catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
-                }
-                else{
-                    //println("API ERROR Wrong currency codes")
-                }
-            }
-            catch (e : Exception){
-                resultTextView!!.text = "ERROR, Please try again or try another currency or date"
-            }
-        }
-
-        yearButton.setOnClickListener {
-            resultTextView.text = "Loading..."
-            try{
-                if(fromCurrency!!.endsWith(")") && toCurrency!!.endsWith(")")){
-                    fromCurrencyCode = fromCurrency!!.substring(fromCurrency!!.length-4, fromCurrency!!.length-1)
-                    toCurrencyCode = toCurrency!!.substring(toCurrency!!.length-4, toCurrency!!.length-1)
-
-                    val c = Calendar.getInstance()
-                    c.add(Calendar.DATE, -364)
-                    val startDate = sdf.format(c.getTime())
-                    val timeSeriesURL = "https://api.exchangerate.host/timeseries?start_date=" + startDate + "&end_date=" + currentDate + "&base=" + fromCurrencyCode + "&symbols=" + toCurrencyCode
-
-                    runBlocking {
-                        GlobalScope.async{
-                            getRateFromURL(timeSeriesURL)
-                        }.await()}
-
-                    //println(makeChartURL())
-
-                    //----------------------COPYED FROM THE INTERNET----------------------\\
-                    val executor = Executors.newSingleThreadExecutor()
-                    val handler = Handler(Looper.getMainLooper())
-                    executor.execute {
-                        try {
-                            val `in` = java.net.URL(makeChartURL()).openStream()
-                            image = BitmapFactory.decodeStream(`in`)
-
-                            handler.post {
-                                imageButton.setImageBitmap(image)
-                            }
-                        }
-                        catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-
-                        setMinMaxStreak()
-                        runOnUiThread{
-                            resultTextView.text = "\nminimum value = " + min + " (" + minDate + ")" + "\nmaximum value = " + max + " (" + maxDate + ")"+  "\nstreak = " + streak + " days" + "\nactual = " + actual + "\n"
-                        }
-                    }
-                }
-                else{
-                    //println("API ERROR Wrong currency codes")
-                }
-            }
-            catch (e : Exception){
-                resultTextView!!.text = "ERROR, Please try again or try another currency or date"
-            }
-        }
-
-        imageButton.setOnClickListener {
-            if (image != null) {
-                mSaveMediaToStorage(image)
-            }
-        }
-    }
         catch(e : Exception){
             internetPopUp()
         }
     }
 
+    //----------------------------MAKE "NO INTERNET" POP UP------------------\\
     private fun internetPopUp(){
         MaterialAlertDialogBuilder(this)
             .setTitle("Internet error!").setMessage("No internet, please try again!")
@@ -240,10 +234,7 @@ class ChartActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showSnackbar(message: String){
-        Snackbar.make(getWindow().getDecorView().getRootView(), message, Snackbar.LENGTH_SHORT).show()
-    }
-
+    //----------------------------SET THE MIN, MAX, STREAK VALUES------------\\
     private fun setMinMaxStreak(){
         min = dataList.get(0)
         max = dataList.get(0)
@@ -271,6 +262,7 @@ class ChartActivity : AppCompatActivity() {
         actual = dataList.get(dataList.size-1)
     }
 
+    //----------------------------INIT THE SPINNERS--------------------------\\
     private fun initSpinners() {
         fromSpinner = findViewById(R.id.fromSpinner)
         toSpinner = findViewById(R.id.toSpinner)
@@ -295,6 +287,7 @@ class ChartActivity : AppCompatActivity() {
         }
     }
 
+    //----------------------------GET THE CURRENCY CODES FROM THE API--------\\
     private suspend fun getSymbols() {
         withContext(Dispatchers.Default) {
             val response = URL(symbolsUrl).readText()
@@ -317,6 +310,7 @@ class ChartActivity : AppCompatActivity() {
         }
     }
 
+    //----------------------------GET THE RATE FROM THE API------------------\\
     private suspend fun getRateFromURL(URL : String){
         withContext(Dispatchers.Default) {
             //println(URL)
@@ -334,11 +328,12 @@ class ChartActivity : AppCompatActivity() {
         }
     }
 
+    //----------------------------MAKE THE URL FOR THE CHART IMAGE-----------\\
     private fun makeChartURL():String{
         var chartURL = "https://quickchart.io//chart?c={ type: 'line', data: { labels: ["
         if(timeList.size < 200){
             for (time in timeList){
-            chartURL += "'" + time + "' ,"
+                chartURL += "'" + time + "' ,"
             }
         }
         else{
@@ -353,7 +348,6 @@ class ChartActivity : AppCompatActivity() {
         chartURL = chartURL.substring(0, chartURL.length-2)
         chartURL += "], datasets: [ { label:"
         chartURL += "'" + toCurrency + "'"
-        //'AFN (Afghan Afghani)'
         chartURL += ", backgroundColor: 'rgb(255, 99, 132)', borderColor: 'rgb(255, 99, 132)', data: ["
         if (dataList.size < 200) {
             for (data in dataList) {
@@ -376,6 +370,8 @@ class ChartActivity : AppCompatActivity() {
         return chartURL
     }
 
+    //----------------------------DOWNLOAD THE IMAGE-------------------------\\
+    //----------------------------COPIED FROM THE INTERNET-------------------\\
     private fun mSaveMediaToStorage(bitmap: Bitmap?) {
         //-------------------THE WHOLE FUNCTION COPYED FROM THE INTERNET------------------\\
         val filename = "${System.currentTimeMillis()}.jpg"
