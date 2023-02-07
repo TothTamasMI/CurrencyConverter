@@ -1,6 +1,7 @@
 package com.example.currencyconverterapp
 
 import android.content.ContentValues
+import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -44,6 +45,7 @@ class ChartActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chart)
 

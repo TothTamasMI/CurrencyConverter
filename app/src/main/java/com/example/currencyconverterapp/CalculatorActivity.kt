@@ -1,6 +1,7 @@
 package com.example.currencyconverterapp
 
 import android.app.DatePickerDialog
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.View
@@ -35,6 +36,7 @@ class CalculatorActivity : AppCompatActivity()  {
     private var codeList = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calculator)
         try{

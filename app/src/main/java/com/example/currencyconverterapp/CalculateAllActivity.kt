@@ -1,6 +1,7 @@
 package com.example.currencyconverterapp
 
 import android.app.DatePickerDialog
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.View
@@ -39,6 +40,7 @@ class CalculateAllActivity : AppCompatActivity()  {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calculate_all)
         try{
@@ -177,6 +179,7 @@ class CalculateAllActivity : AppCompatActivity()  {
         }
         catch (e : Exception){
             //resultTextView!!.text = "ERROR, Please try again or try another currency or date"
+            showSnackbar("ERROR, Please try again or try another currency or date")
         }
     }
 
