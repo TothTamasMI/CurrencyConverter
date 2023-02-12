@@ -11,6 +11,7 @@ Im tested the app on some devices:
 For the app I used these free sources:
 
 Fonts:
+
   https://www.fontspace.com/earth-orbiter-font-f32773
 
   https://www.fontspace.com/mandatory-plaything-font-f41315
