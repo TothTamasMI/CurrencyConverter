@@ -1,6 +1,12 @@
-# CurrencyConverter
+# CurrencyConverte
 
 My second Kotlin app. It can convert currencies and can make charts from it, using API-s.
+
+Im tested the app on some devices:
+  It works perfectly on Android Studio Emulator, on Xiaomi MI 9 Lite.
+  It worked very slow on Samsung Galaxy A32.
+  It worked only with roaming on Samsung Galaxy A10.
+
 
 For the app I used these free sources:
 
