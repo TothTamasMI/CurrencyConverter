@@ -18,11 +18,12 @@ Fonts:
   https://www.fontspace.com/starcruiser-font-f34579
 
 For splash screen gif:
+
   https://tenor.com/hu/view/alyra-ecolealyra-crypto-cryptocurrency-bitcoin-gif-26159292
   
 Images:
+
   https://www.freepik.com/free-vector/cute-rich-astronaut-with-money-gold-coin-cartoon-vector-icon-illustration-science-finance-icon_34221036.htm#query=astronaut%
-20coin&position=4&from_view=author
 
   https://www.freepik.com/free-vector/cute-astronaut-investment-stock-bullish-growth-graph-cartoon-vector-icon-illustration-finance_31526048.htm#query=cute%20astronaut%20graph&position=0&from_view=search&track=sph
 
@@ -35,9 +36,11 @@ Images:
   https://www.freepik.com/free-vector/dollar_2900482.htm#query=coin&position=0&from_view=search&track=sph
   
  APIs: 
+ 
   https://quickchart.io/
   
   https://exchangerate.host/
   
  For searchable spinners:
+ 
   https://github.com/Chivorns/SmartMaterialSpinner
