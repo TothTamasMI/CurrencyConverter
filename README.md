@@ -1,4 +1,4 @@
-# CurrencyConverte
+# AstroCoin (Currency Converter App)
 
 My second Kotlin app. It can convert currencies and can make charts from it, using API-s.
 
